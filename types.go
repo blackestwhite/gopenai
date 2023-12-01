@@ -1,5 +1,7 @@
 package gopenai
 
+import "net/http"
+
 type ChatCompletion struct {
 	ID                string   `json:"id"`
 	Object            string   `json:"object"`
@@ -45,4 +47,15 @@ type ChunkedChoice struct {
 type Delta struct {
 	Role    string `json:"role"`
 	Content string `json:"content"`
+}
+
+type ChatCompletionRequestBody struct {
+	Messages []Message `json:"messages"`
+	Model    string    `json:"model"`
+	Stream   bool      `json:"stream"`
+}
+
+type GopenAiInstance struct {
+	Client *http.Client
+	key    string
 }
