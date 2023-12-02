@@ -1,5 +1,10 @@
 # GopenAI - golang open ai client
 
+## Features
+- supports stream/sse
+
+## How to use
+
 basic usage:
 
 ```go
