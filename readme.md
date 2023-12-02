@@ -17,7 +17,6 @@ import (
 	"net/http"
 
 	"github.com/blackestwhite/gopenai"
-	"golang.org/x/net/proxy"
 )
 
 func main() {
