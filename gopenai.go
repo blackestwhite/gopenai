@@ -17,6 +17,14 @@ func Setup(openAiKey string) *GopenAiInstance {
 	return instance
 }
 
+func SetupCustom(openAiKey string, client *http.Client) *GopenAiInstance {
+	instance := &GopenAiInstance{
+		Client: client,
+		key:    openAiKey,
+	}
+	return instance
+}
+
 func (h *GopenAiInstance) GenerateChatCompletion(prompt ChatCompletionRequestBody) (<-chan ChatCompletionChunk, error) {
 	marshalled, err := json.Marshal(prompt)
 	if err != nil {
