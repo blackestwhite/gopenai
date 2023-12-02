@@ -1,6 +1,7 @@
 package gopenai
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/json"
 	"fmt"
@@ -33,9 +34,7 @@ func (h *GopenAiInstance) GenerateChatCompletion(prompt ChatCompletionRequestBod
 		}
 		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", h.key))
 		req.Header.Add("Content-Type", "application/json")
-		req.Header.Set("Cache-Control", "no-cache")
-		req.Header.Set("Accept", "text/event-stream")
-		req.Header.Set("Connection", "keep-alive")
+
 		res, err := h.Client.Do(req)
 		if err != nil {
 			close(resultCh)
@@ -44,26 +43,19 @@ func (h *GopenAiInstance) GenerateChatCompletion(prompt ChatCompletionRequestBod
 		}
 		defer res.Body.Close()
 
+		scanner := bufio.NewScanner(res.Body)
 		for {
-			bufferSize := 1024
-			data := make([]byte, bufferSize)
-			n, err := res.Body.Read(data)
-			if err != nil {
-				if n == 0 {
-					// End of stream
-					break
-				}
-				close(resultCh)
-				log.Printf("Error reading from response body: %v", err)
-				return
+			line := scanner.Text()
+			if line == "" {
+				continue
 			}
 
 			var chunk ChatCompletionChunk
-			err = json.Unmarshal(data[:n], &chunk)
+			err = json.Unmarshal([]byte(line)[6:], &chunk)
 			if err != nil {
 				close(resultCh)
 				log.Printf("Error unmarshalling JSON: %v", err)
-				return
+				break
 			}
 
 			resultCh <- chunk
