@@ -95,5 +95,7 @@ func main() {
 ```
 
 ## Donations
+
 ETH: blackestwhite.eth
+
 TON: blackestwhite.ton
