@@ -57,8 +57,7 @@ func (h *GopenAiInstance) GenerateChatCompletion(prompt ChatCompletionRequestBod
 			if line == "" {
 				continue
 			}
-			if line == "[DONE]" {
-				res.Body.Close()
+			if line == "data: [DONE]" {
 				break
 			}
 
@@ -72,7 +71,6 @@ func (h *GopenAiInstance) GenerateChatCompletion(prompt ChatCompletionRequestBod
 			resultCh <- chunk
 
 			if chunk.Choices[0].FinishReason == "stop" {
-				res.Body.Close()
 				break
 			}
 		}
