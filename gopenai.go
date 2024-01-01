@@ -51,11 +51,6 @@ func (h *GopenAiInstance) GenerateChatCompletion(prompt ChatCompletionRequestBod
 		}
 		defer res.Body.Close()
 
-		if res.StatusCode != http.StatusOK {
-			log.Fatalf("Unexpected status code: %v", res.StatusCode)
-			return
-		}
-
 		scanner := bufio.NewScanner(res.Body)
 		for scanner.Scan() {
 			line := scanner.Text()
@@ -73,6 +68,7 @@ func (h *GopenAiInstance) GenerateChatCompletion(prompt ChatCompletionRequestBod
 			resultCh <- chunk
 
 			if chunk.Choices[0].FinishReason == "stop" {
+				res.Body.Close()
 				break
 			}
 		}
