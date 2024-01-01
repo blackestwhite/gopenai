@@ -57,6 +57,10 @@ func (h *GopenAiInstance) GenerateChatCompletion(prompt ChatCompletionRequestBod
 			if line == "" {
 				continue
 			}
+			if line == "[DONE]" {
+				res.Body.Close()
+				break
+			}
 
 			var chunk ChatCompletionChunk
 			err = json.Unmarshal([]byte(line)[6:], &chunk)
