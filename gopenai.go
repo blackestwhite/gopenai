@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"regexp"
 )
 
 func Setup(openAiKey string) *GopenAiInstance {
@@ -57,12 +58,19 @@ func (h *GopenAiInstance) GenerateChatCompletion(prompt ChatCompletionRequestBod
 			if line == "" {
 				continue
 			}
+
 			if line == "data: [DONE]" {
 				break
 			}
 
+			// Define a regular expression pattern to match "data: " at the beginning of the line
+			dataPrefixPattern := regexp.MustCompile(`^data: `)
+
+			// `line` contains a line from the SSE response
+			cleanLine := dataPrefixPattern.ReplaceAllString(line, "")
+
 			var chunk ChatCompletionChunk
-			err = json.Unmarshal([]byte(line)[6:], &chunk)
+			err = json.Unmarshal([]byte(cleanLine), &chunk)
 			if err != nil {
 				log.Printf("Error unmarshalling JSON: %v", err)
 				break
