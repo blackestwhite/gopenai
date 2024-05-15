@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"regexp"
 )
@@ -26,28 +25,62 @@ func SetupCustom(openAiKey string, client *http.Client) *GopenAiInstance {
 	return instance
 }
 
-func (h *GopenAiInstance) GenerateChatCompletion(prompt ChatCompletionRequestBody) (chan ChatCompletionChunk, error) {
+func (c *GopenAiInstance) GenerateChatCompletion(prompt ChatCompletionRequestBody) (*ChatCompletion, error) {
+	prompt.Stream = false
 	marshalled, err := json.Marshal(prompt)
 	if err != nil {
 		return nil, err
 	}
 
-	resultCh := make(chan ChatCompletionChunk, 1)
+	req, err := http.NewRequest("POST", "https://api.openai.com/v1/chat/completions", bytes.NewReader(marshalled))
+	if err != nil {
+		return nil, fmt.Errorf("error creating HTTP request: %v", err)
+	}
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", c.key))
+	req.Header.Add("Content-Type", "application/json")
+
+	res, err := c.Client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("error sending HTTP request: %v", err)
+	}
+	defer res.Body.Close()
+
+	var completeResult ChatCompletion
+	if err := json.NewDecoder(res.Body).Decode(&completeResult); err != nil {
+		return nil, fmt.Errorf("error decoding JSON response: %v", err)
+	}
+
+	return &completeResult, nil
+}
+
+func (c *GopenAiInstance) GenerateChatCompletionStream(prompt ChatCompletionRequestBody) (chan ChatCompletionChunk, chan error) {
+	prompt.Stream = true
+	marshalled, err := json.Marshal(prompt)
+	if err != nil {
+		errCh := make(chan error, 1)
+		errCh <- err
+		close(errCh)
+		return nil, errCh
+	}
+
+	resultCh := make(chan ChatCompletionChunk)
+	errCh := make(chan error, 1)
 
 	go func() {
+		defer close(resultCh)
+		defer close(errCh)
+
 		req, err := http.NewRequest("POST", "https://api.openai.com/v1/chat/completions", bytes.NewReader(marshalled))
 		if err != nil {
-			close(resultCh)
-			log.Printf("Error creating HTTP request: %v", err)
+			errCh <- fmt.Errorf("error creating HTTP request: %v", err)
 			return
 		}
-		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", h.key))
+		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", c.key))
 		req.Header.Add("Content-Type", "application/json")
 
-		res, err := h.Client.Do(req)
+		res, err := c.Client.Do(req)
 		if err != nil {
-			close(resultCh)
-			log.Printf("Error sending HTTP request: %v", err)
+			errCh <- fmt.Errorf("error sending HTTP request: %v", err)
 			return
 		}
 		defer res.Body.Close()
@@ -63,17 +96,12 @@ func (h *GopenAiInstance) GenerateChatCompletion(prompt ChatCompletionRequestBod
 				break
 			}
 
-			// Define a regular expression pattern to match "data: " at the beginning of the line
-			dataPrefixPattern := regexp.MustCompile(`^data: `)
-
-			// `line` contains a line from the SSE response
-			cleanLine := dataPrefixPattern.ReplaceAllString(line, "")
-
+			cleanLine := regexp.MustCompile(`^data: `).ReplaceAllString(line, "")
 			var chunk ChatCompletionChunk
-			err = json.Unmarshal([]byte(cleanLine), &chunk)
+			err := json.Unmarshal([]byte(cleanLine), &chunk)
 			if err != nil {
-				log.Printf("Error unmarshalling JSON: %v", err)
-				break
+				errCh <- fmt.Errorf("error unmarshalling JSON: %v", err)
+				return
 			}
 
 			resultCh <- chunk
@@ -84,11 +112,9 @@ func (h *GopenAiInstance) GenerateChatCompletion(prompt ChatCompletionRequestBod
 		}
 
 		if err := scanner.Err(); err != nil {
-			log.Fatalf("Error reading response body: %v", err)
+			errCh <- fmt.Errorf("error reading response body: %v", err)
 		}
-
-		close(resultCh)
 	}()
 
-	return resultCh, nil
+	return resultCh, errCh
 }
