@@ -2,6 +2,14 @@ package gopenai
 
 import "net/http"
 
+const (
+	ModelGPT4o       = "gpt-4o"
+	ModelGPT4Turbo   = "gpt-4-turbo"
+	ModelGPT4        = "gpt-4" // continuous model upgrades, which points to other models
+	ModelGPT4__32k   = "gpt-4-32k"
+	ModelGPT3_5Turbo = "gpt-3.5-turbo" // points to gpt-3.5-turbo-0125
+)
+
 type ChatCompletion struct {
 	ID                string   `json:"id"`
 	Object            string   `json:"object"`

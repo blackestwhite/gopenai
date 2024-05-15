@@ -21,7 +21,7 @@ func main() {
     instance := gopenai.Setup(key)
 
     p := gopenai.ChatCompletionRequestBody{
-        Model: "gpt-3.5-turbo",
+        Model: gopenai.ModelGPT3_5Turbo,
         Messages: []gopenai.Message{
             {Role: "user", Content: "hi"},
         },
