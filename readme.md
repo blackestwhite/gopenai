@@ -53,6 +53,6 @@ func main() {
 
 ## Donations
 
-ETH: blackestwhite.eth
+ETH: `blackestwhite.eth`
 
-TON: blackestwhite.ton
+TON: `blackestwhite.ton`
