@@ -5,7 +5,7 @@
 
 ## How to use
 
-basic usage:
+basic usage(with SSE):
 
 ```go
 package main
