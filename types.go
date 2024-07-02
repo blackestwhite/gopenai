@@ -1,7 +1,5 @@
 package gopenai
 
-import "net/http"
-
 const (
 	ModelGPT4o       = "gpt-4o"
 	ModelGPT4Turbo   = "gpt-4-turbo"
@@ -64,7 +62,7 @@ type ChatCompletionRequestBody struct {
 }
 
 type GopenAiInstance struct {
-	Client *http.Client
+	Client HTTPClient
 	key    string
 }
 
