@@ -51,6 +51,13 @@ func main() {
 }
 ```
 
+## available models
+ModelGPT4o
+ModelGPT4Turbo
+ModelGPT4
+ModelGPT4__32k
+ModelGPT3_5Turbo
+
 ## Donations
 
 ETH: `blackestwhite.eth`
