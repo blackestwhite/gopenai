@@ -51,12 +51,26 @@ func main() {
 }
 ```
 
-## available models
-- gopenai.ModelGPT4o
-- gopenai.ModelGPT4Turbo
-- gopenai.ModelGPT4
-- gopenai.ModelGPT4__32k
-- gopenai.ModelGPT3_5Turbo
+## image generation
+```go
+package main
+
+import (
+    "log"
+    "github.com/blackestwhite/gopenai"
+)
+
+func main() {
+    key := "YOUR-OPEN-AI-KEY"
+
+    instance := gopenai.Setup(key)
+
+    prompt := "a cute persian cat"
+
+    res, _ := instance.GenerateImage(prompt)
+    println(res.Data[0].URL) // prints the url of the generated image
+}
+```
 
 ## Donations
 
