@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"regexp"
@@ -117,4 +118,39 @@ func (c *GopenAiInstance) GenerateChatCompletionStream(prompt ChatCompletionRequ
 	}()
 
 	return resultCh, errCh
+}
+
+func (c *GopenAiInstance) GenerateImage(prompt string) (response ImageGenerationResponse, err error) {
+	if len(prompt) < 1 {
+		return response, errors.New("prompt length must be more than 0 chars")
+	}
+	imageGenerationRequestBody := ImageGenerationRequestBody{
+		Model:  "dall-e-3",
+		Count:  1,
+		Size:   "1024x1024",
+		Prompt: prompt,
+	}
+	marshalled, err := json.Marshal(imageGenerationRequestBody)
+	if err != nil {
+		return response, err
+	}
+
+	req, err := http.NewRequest("POST", "https://api.openai.com/v1/images/generations", bytes.NewReader(marshalled))
+	if err != nil {
+		return response, fmt.Errorf("error creating HTTP request: %v", err)
+	}
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", c.key))
+	req.Header.Add("Content-Type", "application/json")
+
+	res, err := c.Client.Do(req)
+	if err != nil {
+		return response, fmt.Errorf("error sending HTTP request: %v", err)
+	}
+	defer res.Body.Close()
+
+	if err := json.NewDecoder(res.Body).Decode(&response); err != nil {
+		return response, fmt.Errorf("error decoding JSON response: %v", err)
+	}
+
+	return response, nil
 }

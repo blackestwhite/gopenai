@@ -67,3 +67,20 @@ type GopenAiInstance struct {
 	Client *http.Client
 	key    string
 }
+
+type ImageGenerationRequestBody struct {
+	Model  string `json:"model"`
+	Prompt string `json:"prompt"`
+	Count  int    `json:"n"`
+	Size   string `json:"size"`
+}
+
+type ImageGenerationResponse struct {
+	Created int64                         `json:"created"`
+	Data    []ImageGenerationResponseData `json:"data"`
+}
+
+type ImageGenerationResponseData struct {
+	RevisedPrompt string `json:"revised_prompt"`
+	URL           string `json:"url"`
+}
