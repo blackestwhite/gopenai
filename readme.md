@@ -52,11 +52,11 @@ func main() {
 ```
 
 ## available models
-ModelGPT4o
-ModelGPT4Turbo
-ModelGPT4
-ModelGPT4__32k
-ModelGPT3_5Turbo
+- gopenai.ModelGPT4o
+- gopenai.ModelGPT4Turbo
+- gopenai.ModelGPT4
+- gopenai.ModelGPT4__32k
+- gopenai.ModelGPT3_5Turbo
 
 ## Donations
 
