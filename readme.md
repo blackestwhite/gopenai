@@ -1,7 +1,8 @@
 # GopenAI - golang open ai client
 
 ## Features
-- supports stream/sse
+- Supports streaming/SSE for chat completions
+- Image generation using OpenAI's DALL-E
 
 ## How to use
 
