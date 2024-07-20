@@ -1,7 +1,8 @@
 package gopenai
 
 const (
-	ModelGPT4o       = "gpt-4o"
+	ModelGPT4o = "gpt-4o"
+	ModelGPT4oMini
 	ModelGPT4Turbo   = "gpt-4-turbo"
 	ModelGPT4        = "gpt-4" // continuous model upgrades, which points to other models
 	ModelGPT4__32k   = "gpt-4-32k"
