@@ -73,9 +73,13 @@ func (c *GopenAiInstance) sendChatCompletionRequest(prompt ChatCompletionRequest
 
 	res, err := c.Client.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("error sending HTTP request: %v", err)
+		return nil, fmt.Errorf("got error while sending request: %s", err)
 	}
 	defer res.Body.Close()
+
+	if res.Body == nil {
+		return nil, fmt.Errorf("received empty response body with status: %s", res.Status)
+	}
 
 	var completeResult ChatCompletion
 	if err := json.NewDecoder(res.Body).Decode(&completeResult); err != nil {
@@ -98,6 +102,9 @@ func (c *GopenAiInstance) streamChatCompletion(marshalled []byte, resultCh chan 
 		return
 	}
 	defer res.Body.Close()
+	if res.Body == nil {
+		errCh <- fmt.Errorf("received empty response body with status: %s", res.Status)
+	}
 
 	scanner := bufio.NewScanner(res.Body)
 	for scanner.Scan() {
@@ -111,6 +118,7 @@ func (c *GopenAiInstance) streamChatCompletion(marshalled []byte, resultCh chan 
 		}
 
 		cleanLine := regexp.MustCompile(`^data: `).ReplaceAllString(line, "")
+
 		var chunk ChatCompletionChunk
 		err := json.Unmarshal([]byte(cleanLine), &chunk)
 		if err != nil {
@@ -120,7 +128,7 @@ func (c *GopenAiInstance) streamChatCompletion(marshalled []byte, resultCh chan 
 
 		resultCh <- chunk
 
-		if chunk.Choices[0].FinishReason == "stop" {
+		if len(chunk.Choices) > 0 && chunk.Choices[0].FinishReason == "stop" {
 			break
 		}
 	}
